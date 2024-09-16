@@ -39,7 +39,9 @@
 #include "llvm/TargetParser/Host.h"
 #endif
 #include "llvm/Support/TimeProfiler.h"
+#if LLVM_VERSION_LT(20, 0)
 #include "llvm/Transforms/Instrumentation.h"
+#endif
 #include "llvm/Transforms/Instrumentation/AddressSanitizer.h"
 #include "llvm/Transforms/Instrumentation/DataFlowSanitizer.h"
 #if LLVM_VERSION_GE(19, 0)
@@ -411,7 +413,7 @@ extern "C" LLVMTargetMachineRef LLVMRustCreateTargetMachine(
     bool EmitStackSizeSection, bool RelaxELFRelocations, bool UseInitArray,
     const char *SplitDwarfFile, const char *OutputObjFile,
     const char *DebugInfoCompression, bool UseEmulatedTls,
-    const char *ArgsCstrBuff, size_t ArgsCstrBuffLen) {
+    const char *ArgsCstrBuff, size_t ArgsCstrBuffLen, const char *CompilerPath, const char *CommandlineArgs) {
 
   auto OptLevel = fromRust(RustOptLevel);
   auto RM = fromRust(RustReloc);
@@ -497,6 +499,7 @@ extern "C" LLVMTargetMachineRef LLVMRustCreateTargetMachine(
 
   Options.EmitStackSizeSection = EmitStackSizeSection;
 
+#if LLVM_VERSION_LT(20, 0)
   if (ArgsCstrBuff != nullptr) {
     int buffer_offset = 0;
     assert(ArgsCstrBuff[ArgsCstrBuffLen - 1] == '\0');
@@ -524,6 +527,11 @@ extern "C" LLVMTargetMachineRef LLVMRustCreateTargetMachine(
     Options.MCOptions.CommandLineArgs =
         llvm::ArrayRef<std::string>(cmd_arg_strings, num_cmd_arg_strings);
   }
+#else // LLVM_VERSION_GE(20, 0)
+  Options.MCOptions.CommandlineArgs = CommandlineArgs != nullptr ? CommandlineArgs : "";
+  Options.MCOptions.Argv0 = CompilerPath != nullptr ? CompilerPath : "";
+#endif
+
 
   TargetMachine *TM = TheTarget->createTargetMachine(
       Trip.getTriple(), CPU, Feature, Options, RM, CM, OptLevel);
@@ -531,11 +539,11 @@ extern "C" LLVMTargetMachineRef LLVMRustCreateTargetMachine(
 }
 
 extern "C" void LLVMRustDisposeTargetMachine(LLVMTargetMachineRef TM) {
-
+#if LLVM_VERSION_LT(20, 0)
   MCTargetOptions &MCOptions = unwrap(TM)->Options.MCOptions;
   delete[] MCOptions.Argv0;
   delete[] MCOptions.CommandLineArgs.data();
-
+#endif
   delete unwrap(TM);
 }
 

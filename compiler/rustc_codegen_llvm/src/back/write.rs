@@ -166,6 +166,29 @@ fn to_llvm_relocation_model(relocation_model: RelocModel) -> llvm::RelocModel {
     }
 }
 
+fn flatten_commandline_args(args : &[String]) -> CString {
+    let mut result: String = Default::default();
+
+    let mut did_print_arg = false;
+
+    for arg in args {
+        if arg.ends_with(".rs") {
+            continue;
+        }
+
+        if did_print_arg {
+            result.push(' ');
+        }
+
+        result.push('"');
+        result.push_str(arg);
+        result.push('"');
+        did_print_arg = true;
+    }
+
+    CString::new(result).unwrap()
+}
+
 pub(crate) fn to_llvm_code_model(code_model: Option<CodeModel>) -> llvm::CodeModel {
     match code_model {
         Some(CodeModel::Tiny) => llvm::CodeModel::Tiny,
@@ -246,6 +269,9 @@ pub(crate) fn target_machine_factory(
         args_cstr_buff
     };
 
+    let commandline_args =  flatten_commandline_args(&sess.expanded_args);
+    let compiler_path = CString::new(std::env::current_exe().unwrap_or_default().into_os_string().into_string().unwrap_or_default()).unwrap();
+
     let debuginfo_compression = sess.opts.debuginfo_compression.to_string();
     match sess.opts.debuginfo_compression {
         rustc_session::config::DebugInfoCompression::Zlib => {
@@ -301,6 +327,8 @@ pub(crate) fn target_machine_factory(
             &debuginfo_compression,
             use_emulated_tls,
             &args_cstr_buff,
+            &compiler_path,
+            &commandline_args,
         )
     })
 }

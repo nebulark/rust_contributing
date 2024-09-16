@@ -40,6 +40,8 @@ impl OwnedTargetMachine {
         debug_info_compression: &CStr,
         use_emulated_tls: bool,
         args_cstr_buff: &[u8],
+        compiler_path: &CStr,
+        commandline_args: &CStr,
     ) -> Result<Self, LlvmError<'static>> {
         assert!(args_cstr_buff.len() > 0);
         assert!(
@@ -73,6 +75,8 @@ impl OwnedTargetMachine {
                 use_emulated_tls,
                 args_cstr_buff.as_ptr() as *const c_char,
                 args_cstr_buff.len(),
+                compiler_path.as_ptr(),
+                commandline_args.as_ptr(),
             )
         };
 

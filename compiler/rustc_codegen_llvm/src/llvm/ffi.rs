@@ -2202,6 +2202,8 @@ unsafe extern "C" {
         UseEmulatedTls: bool,
         ArgsCstrBuff: *const c_char,
         ArgsCstrBuffLen: usize,
+        CompilerPath: *const c_char,
+        CommandlineArgs: *const c_char,
     ) -> *mut TargetMachine;
 
     pub fn LLVMRustDisposeTargetMachine(T: *mut TargetMachine);
