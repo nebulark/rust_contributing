@@ -413,7 +413,8 @@ extern "C" LLVMTargetMachineRef LLVMRustCreateTargetMachine(
     bool EmitStackSizeSection, bool RelaxELFRelocations, bool UseInitArray,
     const char *SplitDwarfFile, const char *OutputObjFile,
     const char *DebugInfoCompression, bool UseEmulatedTls,
-    const char *ArgsCstrBuff, size_t ArgsCstrBuffLen, const char *CompilerPath, const char *CommandlineArgs) {
+    const char *ArgsCstrBuff, size_t ArgsCstrBuffLen,
+    const char *CompilerPath, const char *CommandlineArgs) {
 
   auto OptLevel = fromRust(RustOptLevel);
   auto RM = fromRust(RustReloc);

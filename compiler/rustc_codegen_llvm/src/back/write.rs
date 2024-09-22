@@ -166,7 +166,7 @@ fn to_llvm_relocation_model(relocation_model: RelocModel) -> llvm::RelocModel {
     }
 }
 
-fn flatten_commandline_args(args : &[String]) -> CString {
+fn flatten_commandline_args(args: &[String]) -> CString {
     let mut result: String = Default::default();
 
     let mut did_print_arg = false;
@@ -269,8 +269,15 @@ pub(crate) fn target_machine_factory(
         args_cstr_buff
     };
 
-    let commandline_args =  flatten_commandline_args(&sess.expanded_args);
-    let compiler_path = CString::new(std::env::current_exe().unwrap_or_default().into_os_string().into_string().unwrap_or_default()).unwrap();
+    let commandline_args = flatten_commandline_args(&sess.expanded_args);
+    let compiler_path = CString::new(
+        std::env::current_exe()
+            .unwrap_or_default()
+            .into_os_string()
+            .into_string()
+            .unwrap_or_default(),
+    )
+    .unwrap();
 
     let debuginfo_compression = sess.opts.debuginfo_compression.to_string();
     match sess.opts.debuginfo_compression {
